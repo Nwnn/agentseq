@@ -2,9 +2,12 @@ import yaml
 import os
 import pandas as pd
 from itertools import product
+from dotenv import load_dotenv
 from dataset_loader import load_dataset
 from llm_agent import LLMAgent
 from embedding_calculator import EmbeddingCalculator
+
+load_dotenv()
 
 def load_config(config_path):
     with open(config_path, 'r', encoding='utf-8') as f:
@@ -13,17 +16,21 @@ def load_config(config_path):
 def run_experiment(config_path):
     config = load_config(config_path)
 
+    print("Loading dataset...")
     # Load dataset
     df, categories = load_dataset(config['experiment']['dataset'], config['experiment']['num_samples'])
+    print(f"Loaded {len(df)} samples from {config['experiment']['dataset']}")
 
     # API key
     api_key = os.getenv(config['experiment']['openrouter_api_key_env'])
     if not api_key:
         raise ValueError("API key not found in environment variables")
 
+    print("Initializing embedding calculator...")
     # Embedding calculator
     emb_calc = EmbeddingCalculator(config['experiment']['embedding_model'])
 
+    print("Creating LLM agents...")
     # Create agents for each step
     agents = {}
     for step in config['steps']:
@@ -35,15 +42,24 @@ def run_experiment(config_path):
     step_names = [step['name'] for step in config['steps']]
     agent_ids_per_step = [[agent['id'] for agent in step['agents']] for step in config['steps']]
     pipelines = list(product(*agent_ids_per_step))
+    print(f"Generated {len(pipelines)} pipeline combinations")
 
     # Logs
     logs = []
+    total_samples = len(df)
+    total_pipelines = len(pipelines)
+
+    print(f"Starting experiment with {total_samples} samples and {total_pipelines} pipelines...")
 
     for idx, row in df.iterrows():
+        if idx % 50 == 0 or idx == 0:
+            print(f"Processing sample {idx+1}/{total_samples}")
         input_text = row['text']
         gold_label = row['label']
 
-        for pipeline in pipelines:
+        for pipeline_idx, pipeline in enumerate(pipelines):
+            if pipeline_idx % 5 == 0 or pipeline_idx == 0:
+                print(f"  Processing pipeline {pipeline_idx+1}/{total_pipelines} for sample {idx+1}")
             outputs = {}
             current_input = input_text
 
@@ -76,7 +92,9 @@ def run_experiment(config_path):
 
     # Save logs
     log_df = pd.DataFrame(logs)
-    log_df.to_csv('logs/experiment_logs.csv', index=False)
+    log_df.to_csv('../logs/experiment_logs.csv', index=False)
+    print(f"Experiment completed. Logs saved to logs/experiment_logs.csv")
+    print(f"Total log entries: {len(logs)}")
 
 def parse_label(output, categories):
     # Simple parsing: assume the output contains the category name

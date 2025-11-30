@@ -1,8 +1,13 @@
 import pandas as pd
 import matplotlib.pyplot as plt
-from scipy.spatial import ConvexHull
 import numpy as np
+from dotenv import load_dotenv
 import yaml
+import sys
+import os
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+load_dotenv()
 
 def load_config(config_path):
     with open(config_path, 'r', encoding='utf-8') as f:
@@ -28,9 +33,22 @@ def analyze_results(results_path, config_path):
 
     # Pareto frontier
     points = results[['total_dist_norm', 'task_score_norm']].values
-    hull = ConvexHull(points)
-    pareto_indices = hull.vertices
-    pareto_points = points[pareto_indices]
+
+    # 1. 距離で昇順ソート
+    order = np.argsort(points[:, 0])
+    points_sorted = points[order]
+
+    # 2. パレートフロンティア抽出（距離↓・スコア↑）
+    pareto_mask = []
+    best_score = -np.inf
+    for d, s in points_sorted:
+        if s > best_score + 1e-9:  # 数値誤差よけ
+            pareto_mask.append(True)
+            best_score = s
+        else:
+            pareto_mask.append(False)
+
+    pareto_points = points_sorted[np.array(pareto_mask)]
 
     # Plot
     plt.figure(figsize=(10, 6))
@@ -46,4 +64,4 @@ def analyze_results(results_path, config_path):
     plt.show()
 
 if __name__ == "__main__":
-    analyze_results("aggregated_results.csv", "../config.yaml")
+    analyze_results("analysis/aggregated_results.csv", "../config.yaml")

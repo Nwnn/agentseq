@@ -1,6 +1,6 @@
 experiment:
   dataset: "ag_news"  # or "yelp_polarity"
-  num_samples: 500
+  num_samples: 5
   embedding_model: "all-MiniLM-L6-v2"
   lambda: 0.1  # Hyperparameter for graph score
   openrouter_api_key_env: "OPENROUTER_API_KEY"

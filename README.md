@@ -17,10 +17,30 @@
    pip install -r requirements.txt
    ```
 
-2. OpenRouter APIキーを環境変数に設定:
-   ```bash
-   export OPENROUTER_API_KEY="your_api_key_here"
-   ```
+2. OpenRouter APIキーを設定:
+   - `.env.example` をコピーして `.env` を作成し、APIキーを記載:
+     ```bash
+     cp .env.example .env
+     ```
+     `.env` ファイルを編集:
+     ```
+     OPENROUTER_API_KEY=your_api_key_here
+     ```
+     ※ `.env` は `.gitignore` で無視されるため、Gitにコミットされません。
+
+   - または、環境変数に直接設定（上記方法も使用可能）:
+     - Linux/Mac:
+       ```bash
+       export OPENROUTER_API_KEY="your_api_key_here"
+       ```
+     - Windows (コマンドプロンプト):
+       ```cmd
+       set OPENROUTER_API_KEY=your_api_key_here
+       ```
+     - Windows (PowerShell):
+       ```powershell
+       $env:OPENROUTER_API_KEY="your_api_key_here"
+       ```
 
 3. 設定ファイルを編集: `config.yaml`
    - データセット選択
@@ -29,19 +49,25 @@
 
 ## 使用方法
 
-1. 実験実行:
+1. `.env`ファイルを作成し、OpenRouter APIキーを設定:
+   ```bash
+   cp .env.example .env
+   # .envファイルを編集してAPIキーを入力
+   ```
+
+2. 実験実行:
    ```bash
    cd src
    python run_experiment.py
    ```
 
-2. ログ集計:
+3. ログ集計:
    ```bash
    cd analysis
    python aggregate_logs.py
    ```
 
-3. 結果分析:
+4. 結果分析:
    ```bash
    python analyze_results.py
    ```

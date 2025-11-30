@@ -1,7 +1,14 @@
 import pandas as pd
 import numpy as np
-from embedding_calculator import EmbeddingCalculator
+from dotenv import load_dotenv
 import yaml
+import sys
+import os
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from src.embedding_calculator import EmbeddingCalculator
+
+load_dotenv()
 
 def load_config(config_path):
     with open(config_path, 'r', encoding='utf-8') as f:
@@ -51,22 +58,26 @@ def aggregate_logs(log_path, config_path):
             embeddings = emb_calc.compute_embeddings(texts)
             outputs[step_name][agent_id] = emb_calc.compute_mean_embedding(embeddings)
 
-    # For last step input
+    # For last step input (μ_in for last step)
     last_step_input = {}
-    for agent_id in agent_ids_per_step[-2]:  # Second last step
-        # Find best partner for last step
+    for agent_id in agent_ids_per_step[-1]:  # Last step agents
+        # Find best partner from previous step
         best_acc = 0
         best_partner = None
-        for partner_id in agent_ids_per_step[-1]:
-            acc = final_accs[(agent_id, partner_id)] if len(step_names) == 2 else 0  # Simplify for 3 steps
+        for partner_id in agent_ids_per_step[-2]:
+            pipeline_key = (partner_id, agent_id) if len(step_names) == 2 else (agent_ids_per_step[0][0], partner_id, agent_id)[:len(step_names)]  # Adjust for n steps
+            acc = final_accs.get(pipeline_key, 0)
             if acc > best_acc:
                 best_acc = acc
                 best_partner = partner_id
-        # Collect inputs for that pair
-        mask = (logs[f'{step_names[-2]}_id'] == agent_id) & (logs[f'{step_names[-1]}_id'] == best_partner)
+        # Collect y_{n-1} for that pair
+        mask = (logs[f'{step_names[-2]}_id'] == best_partner) & (logs[f'{step_names[-1]}_id'] == agent_id)
         texts = logs[mask][f'{step_names[-2]}_text'].tolist()
-        embeddings = emb_calc.compute_embeddings(texts)
-        last_step_input[agent_id] = emb_calc.compute_mean_embedding(embeddings)
+        if texts:  # Check if not empty
+            embeddings = emb_calc.compute_embeddings(texts)
+            last_step_input[agent_id] = emb_calc.compute_mean_embedding(embeddings)
+        else:
+            last_step_input[agent_id] = np.zeros(emb_calc.model.get_sentence_embedding_dimension())  # Fallback
 
     # Distances
     distances = {}
@@ -98,6 +109,7 @@ def aggregate_logs(log_path, config_path):
             'task_score': pipeline_task_scores[pipeline],
             'total_dist': pipeline_distances[pipeline]
         })
+    os.makedirs('analysis', exist_ok=True)
     pd.DataFrame(results).to_csv('analysis/aggregated_results.csv', index=False)
 
 if __name__ == "__main__":

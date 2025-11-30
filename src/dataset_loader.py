@@ -1,4 +1,4 @@
-from datasets import load_dataset
+from datasets import load_dataset as hf_load_dataset
 import pandas as pd
 
 def load_dataset(dataset_name, num_samples=None):
@@ -14,10 +14,10 @@ def load_dataset(dataset_name, num_samples=None):
         list: List of category names
     """
     if dataset_name == "ag_news":
-        dataset = load_dataset("ag_news", split="test")  # Using test split for simplicity
+        dataset = hf_load_dataset("ag_news", split="test")  # Using test split for simplicity
         categories = ['World', 'Sports', 'Business', 'Sci/Tech']
     elif dataset_name == "yelp_polarity":
-        dataset = load_dataset("yelp_polarity", split="test")
+        dataset = hf_load_dataset("yelp_polarity", split="test")
         categories = ['negative', 'positive']
     else:
         raise ValueError(f"Unsupported dataset: {dataset_name}")
