@@ -1,0 +1,79 @@
+experiment:
+  dataset: "ag_news"  # or "yelp_polarity"
+  num_samples: 500
+  embedding_model: "all-MiniLM-L6-v2"
+  lambda: 0.1  # Hyperparameter for graph score
+  openrouter_api_key_env: "OPENROUTER_API_KEY"
+
+steps:
+  - name: "extract"
+    description: "要点抽出"
+    agents:
+      - id: "E1-A"
+        model: "x-ai/grok-4-fast"
+        prompt: |
+          以下のテキストから、重要なポイントを3〜5個の箇点で抽出してください。情報漏れを最小化する冗長な抽出を心がけてください。
+
+          テキスト: {input}
+      - id: "E1-B"
+        model: "x-ai/grok-4-fast"
+        prompt: |
+          以下のテキストから、上位3点の要点を簡潔に箇点で抽出してください。
+
+          テキスト: {input}
+      - id: "E1-C"
+        model: "x-ai/grok-4-fast"
+        prompt: |
+          以下のテキストから、分類に有効なキーワードを含む要点を3〜5個の箇点で抽出してください。
+
+          テキスト: {input}
+
+  - name: "summarize"
+    description: "要約生成"
+    agents:
+      - id: "E2-A"
+        model: "x-ai/grok-4-fast"
+        prompt: |
+          以下の要点を基に、人間向けの自然で滑らかな要約を1〜3文で作成してください。
+
+          要点: {input}
+      - id: "E2-B"
+        model: "x-ai/grok-4-fast"
+        prompt: |
+          以下の要点を基に、非常に短いがキーワード密度の高い1文の要約を作成してください。
+
+          要点: {input}
+      - id: "E2-C"
+        model: "x-ai/grok-4-fast"
+        prompt: |
+          以下の要点を基に、分類用テンプレートに沿った要約を作成してください。形式: "This text is about [TOPIC] because ..."
+
+          要点: {input}
+
+  - name: "classify"
+    description: "分類"
+    agents:
+      - id: "E3-A"
+        model: "x-ai/grok-4-fast"
+        prompt: |
+          以下の要約を基に、テキストのカテゴリを分類してください。思考プロセスとラベルを出力してください。
+
+          要約: {input}
+
+          カテゴリ: {categories}
+      - id: "E3-B"
+        model: "x-ai/grok-4-fast"
+        prompt: |
+          以下の要約を基に、テキストのカテゴリを分類してください。JSON形式でラベルと信頼度を出力してください。
+
+          要約: {input}
+
+          カテゴリ: {categories}
+      - id: "E3-C"
+        model: "x-ai/grok-4-fast"
+        prompt: |
+          以下の要約（箇点またはテンプレート化されたもの）を基に、テキストのカテゴリを分類してください。
+
+          要約: {input}
+
+          カテゴリ: {categories}
