@@ -25,11 +25,6 @@ coverage.xml
 .pytest_cache
 .hypothesis
 
-# Data and logs
-data/
-logs/
-analysis/
-
 # IDE
 .vscode/
 .idea/

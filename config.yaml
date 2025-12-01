@@ -1,6 +1,6 @@
 experiment:
   dataset: "ag_news"  # or "yelp_polarity"
-  num_samples: 5
+  num_samples: 500
   embedding_model: "all-MiniLM-L6-v2"
   lambda: 0.1  # Hyperparameter for graph score
   openrouter_api_key_env: "OPENROUTER_API_KEY"
@@ -10,70 +10,70 @@ steps:
     description: "要点抽出"
     agents:
       - id: "E1-A"
-        model: "x-ai/grok-4-fast"
+        model: "openai/gpt-oss-120b"
         prompt: |
-          以下のテキストから、重要なポイントを3〜5個の箇点で抽出してください。情報漏れを最小化する冗長な抽出を心がけてください。
+          Extract 3-5 key points from the text below in bullet points. Focus on minimizing redundancy while ensuring no critical information is lost.
 
-          テキスト: {input}
+          Text: {input}
       - id: "E1-B"
-        model: "x-ai/grok-4-fast"
+        model: "openai/gpt-oss-120b"
         prompt: |
-          以下のテキストから、上位3点の要点を簡潔に箇点で抽出してください。
+          Extract the top 3 key points from the text below in concise bullet points.
 
-          テキスト: {input}
+          Text: {input}
       - id: "E1-C"
-        model: "x-ai/grok-4-fast"
+        model: "openai/gpt-oss-120b"
         prompt: |
-          以下のテキストから、分類に有効なキーワードを含む要点を3〜5個の箇点で抽出してください。
+          Extract 3-5 key points from the text below that include keywords relevant to classification. Present as bullet points.
 
-          テキスト: {input}
+          Text: {input}
 
   - name: "summarize"
     description: "要約生成"
     agents:
       - id: "E2-A"
-        model: "x-ai/grok-4-fast"
+        model: "openai/gpt-oss-120b"
         prompt: |
-          以下の要点を基に、人間向けの自然で滑らかな要約を1〜3文で作成してください。
+          Based on the key points below, create a natural and smooth summary in 1-3 sentences suitable for human reading.
 
-          要点: {input}
+          Key points: {input}
       - id: "E2-B"
-        model: "x-ai/grok-4-fast"
+        model: "openai/gpt-oss-120b"
         prompt: |
-          以下の要点を基に、非常に短いがキーワード密度の高い1文の要約を作成してください。
+          Based on the key points below, create a very short but keyword-dense summary in exactly 1 sentence.
 
-          要点: {input}
+          Key points: {input}
       - id: "E2-C"
-        model: "x-ai/grok-4-fast"
+        model: "openai/gpt-oss-120b"
         prompt: |
-          以下の要点を基に、分類用テンプレートに沿った要約を作成してください。形式: "This text is about [TOPIC] because ..."
+          Based on the key points below, create a summary in the following template format: "This text is about [TOPIC] because ..."
 
-          要点: {input}
+          Key points: {input}
 
   - name: "classify"
     description: "分類"
     agents:
       - id: "E3-A"
-        model: "x-ai/grok-4-fast"
+        model: "openai/gpt-oss-120b"
         prompt: |
-          以下の要約を基に、テキストのカテゴリを分類してください。思考プロセスとラベルを出力してください。
+          Based on the summary below, classify the text's category. Provide your reasoning process and the final label.
 
-          要約: {input}
+          Summary: {input}
 
-          カテゴリ: {categories}
+          Categories: {categories}
       - id: "E3-B"
-        model: "x-ai/grok-4-fast"
+        model: "openai/gpt-oss-120b"
         prompt: |
-          以下の要約を基に、テキストのカテゴリを分類してください。JSON形式でラベルと信頼度を出力してください。
+          Based on the summary below, classify the text's category. Output in JSON format with "label" and "confidence" fields.
 
-          要約: {input}
+          Summary: {input}
 
-          カテゴリ: {categories}
+          Categories: {categories}
       - id: "E3-C"
-        model: "x-ai/grok-4-fast"
+        model: "openai/gpt-oss-120b"
         prompt: |
-          以下の要約（箇点またはテンプレート化されたもの）を基に、テキストのカテゴリを分類してください。
+          Based on the summary below (which may be bullet points or templated), classify the text's category. Provide the label directly.
 
-          要約: {input}
+          Summary: {input}
 
-          カテゴリ: {categories}
+          Categories: {categories}
