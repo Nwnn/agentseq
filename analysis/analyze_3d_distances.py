@@ -100,16 +100,15 @@ def analyze_3d_distances(logs_path, config_path):
 
     distances_df = pd.DataFrame(distances)
 
-    # 3D plot
-    fig = plt.figure(figsize=(10, 8))
-    ax = fig.add_subplot(111, projection='3d')
-    sc = ax.scatter(distances_df['dist12'], distances_df['dist23'], distances_df['total_dist'], c=distances_df['is_correct'], cmap='coolwarm')
-    ax.set_xlabel('Dist12')
-    ax.set_ylabel('Dist23')
-    ax.set_zlabel('Total Dist')
+    # 2D plot: Dist12 vs Dist23, colored by is_correct
+    plt.figure(figsize=(8, 6))
+    sc = plt.scatter(distances_df['dist12'], distances_df['dist23'], c=distances_df['is_correct'], cmap='coolwarm', alpha=0.5, s=1)
+    plt.xlabel('Dist12')
+    plt.ylabel('Dist23')
     plt.colorbar(sc, label='Is Correct')
-    plt.title('3D Scatter Plot of Per-Sample Distances')
-    plt.savefig('analysis/3d_distances_per_sample.png')
+    plt.title('Dist12 vs Dist23 (Per-Sample)')
+    plt.grid(True)
+    plt.savefig('analysis/dist12_dist23_2d.png')
     plt.show()
 
     save_cache(cache)
