@@ -84,6 +84,7 @@
 ## 出力
 
 - `logs/experiment_logs.csv`: 詳細ログ
+- `logs/`: config.yamlの環境設定に基づいて生成されたオフライン実験環境として利用可能なデータセット
 - `analysis/aggregated_results.csv`: 集計結果
 - `analysis/tradeoff_plot.png`: トレードオフ可視化
 
